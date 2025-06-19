@@ -1,95 +1,191 @@
 import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import json
 import time
-import re
-from flask import Flask, request, jsonify
+import base64
+from urllib.parse import urlparse, parse_qs
 import random
-import threading
-
-PROXY_SOURCES = [
-    "https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http",
-    "https://www.proxy-list.download/api/v1/get?type=http",
-    "https://api.openproxylist.xyz/http.txt",
-    "https://www.proxyscan.io/download?type=http",
-    "https://raw.githubusercontent.com/TheSpeedX/SOCKS-List/master/http.txt",
-    "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/http.txt",
-    "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
-    "https://raw.githubusercontent.com/mmpx12/proxy-list/master/http.txt",
-    "https://raw.githubusercontent.com/UserR3X/proxy-list/main/http.txt",
-    "https://raw.githubusercontent.com/Zaeem20/FREE_PROXIES_LIST/master/http.txt",
-    "https://raw.githubusercontent.com/roosterkid/openproxylist/main/http.txt",
-    "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt",
-    "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-http.txt",
-    "https://raw.githubusercontent.com/sunny9577/proxy-scraper/master/proxies.txt",
-    "https://raw.githubusercontent.com/ALIILAPRO/Proxy/main/http.txt",
-    "https://raw.githubusercontent.com/B4RC0DE-TM/proxy-list/main/HTTP.txt",
-    "https://raw.githubusercontent.com/HyperBeats/proxy-list/main/http.txt",
-    "https://raw.githubusercontent.com/officialputuid/KangProxy/KangProxy/http/http.txt",
-    "https://raw.githubusercontent.com/zevtyardt/proxy-list/main/http.txt",
-    "https://raw.githubusercontent.com/MuRongPIG/Proxy-Master/main/http.txt",
-    "https://raw.githubusercontent.com/ObcbO/getproxy/master/http.txt"
-]
-
-FETCH_TIMEOUT = 10
-VALIDATE_TIMEOUT = 2
-MAX_WORKERS = 200
+from flask import Flask, request, jsonify
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 app = Flask(__name__)
-proxy_lock = threading.Lock()
-proxy_memory = set()
-working_proxies = set()
 
-def validate_and_store(proxy):
-    try:
-        res = requests.get("http://httpbin.org/ip", proxies={"http": proxy, "https": proxy}, timeout=VALIDATE_TIMEOUT)
-        if res.status_code == 200:
-            with proxy_lock:
-                working_proxies.add(proxy)
-    except:
-        pass
+user_agents = [
+    "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+    "Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
+]
 
-def fetch_and_validate():
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for url in PROXY_SOURCES:
-            try:
-                res = requests.get(url, timeout=FETCH_TIMEOUT)
-                if res.status_code == 200:
-                    for line in res.text.strip().splitlines():
-                        line = line.strip()
-                        if not line:
-                            continue
-                        if '://' not in line:
-                            line = f"http://{line}"
-                        if re.match(r'^https?://\d{1,3}(\.\d{1,3}){3}:\d+$', line):
-                            with proxy_lock:
-                                if line not in proxy_memory:
-                                    proxy_memory.add(line)
-                                    executor.submit(validate_and_store, line)
-            except:
-                continue
+def sleep(ms):
+    time.sleep(ms / 1000)
 
-@app.route("/proxy-request")
-def proxy_request():
-    with proxy_lock:
-        proxies = list(working_proxies)
+def base64decode(str_data):
+    missing_padding = len(str_data) % 4
+    if missing_padding:
+        str_data += '=' * (4 - missing_padding)
+    str_data = str_data.replace("-", "+").replace("_", "/")
+    return base64.b64decode(str_data).decode('utf-8')
 
-    random.shuffle(proxies)
-    for proxy in proxies:
+def decode_token_data(token):
+    data = token.split(".")[1]
+    data = base64decode(data)
+    return json.loads(data)
+
+def get_stages(session):
+    def single_request():
+        headers = {
+            'Android-Session': session,
+            'User-Agent': random.choice(user_agents)
+        }
         try:
-            res = requests.get("http://httpbin.org/ip", proxies={"http": proxy, "https": proxy}, timeout=VALIDATE_TIMEOUT)
-            if res.status_code == 200:
-                return jsonify({"status": "success", "proxy": proxy, "response": res.json()})
-            else:
-                with proxy_lock:
-                    working_proxies.discard(proxy)
+            response = requests.get('https://api.codex.lol/v1/stage/stages', headers=headers, timeout=10)
+            data = response.json()
+            if data.get('success', False) and not data.get('authenticated', False):
+                return data.get('stages', [])
         except:
-            with proxy_lock:
-                working_proxies.discard(proxy)
+            return None
+        return None
 
-    return jsonify({"status": "error", "message": "No working proxy found"}), 503
+    with ThreadPoolExecutor(max_workers=400) as executor:
+        futures = [executor.submit(single_request) for _ in range(400)]
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                return result  # Trả về kết quả đầu tiên thành công
 
-if __name__ == "__main__":
-    print("[+] Starting fetch and validation thread...")
-    threading.Thread(target=fetch_and_validate, daemon=True).start()
-    print("[+] Running Flask 80...")
-    app.run(host="0.0.0.0", port=80)
+    return []  # Nếu tất cả đều thất bại
+
+def initiate_stage(stage_id, session):
+    def single_request():
+        headers = {
+            'Android-Session': session,
+            'User-Agent': random.choice(user_agents),
+            'Content-Type': 'application/json'
+        }
+        body = json.dumps({"stageId": stage_id})
+        try:
+            response = requests.post('https://api.codex.lol/v1/stage/initiate', headers=headers, data=body, timeout=10)
+            data = response.json()
+            if data.get('success', False):
+                return data.get('token')
+        except:
+            return None
+        return None
+
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = [executor.submit(single_request) for _ in range(20)]
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                return result
+
+    return None
+
+def validate_stage(token, referrer, session):
+    def single_request():
+        headers = {
+            'Android-Session': session,
+            'User-Agent': random.choice(user_agents),
+            'Content-Type': 'application/json',
+            'Task-Referrer': referrer
+        }
+        body = json.dumps({"token": token})
+        try:
+            response = requests.post('https://api.codex.lol/v1/stage/validate', headers=headers, data=body, timeout=10)
+            data = response.json()
+            if data.get('success', False):
+                return data.get('token')
+        except:
+            return None
+        return None
+
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = [executor.submit(single_request) for _ in range(20)]
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                return result
+
+    return None
+
+
+def authenticate(validated_tokens, session):
+    def single_request():
+        headers = {
+            'Android-Session': session,
+            'User-Agent': random.choice(user_agents),
+            'Content-Type': 'application/json'
+        }
+        body = json.dumps({"tokens": validated_tokens})
+        try:
+            response = requests.post('https://api.codex.lol/v1/stage/authenticate', headers=headers, data=body, timeout=10)
+            data = response.json()
+            if 'userFacingMessage' in data:
+                print("API message: ", data['userFacingMessage'])
+            if data.get('success', False):
+                return True
+        except:
+            return None
+        return None
+
+    with ThreadPoolExecutor(max_workers=400) as executor:
+        futures = [executor.submit(single_request) for _ in range(400)]
+        for future in as_completed(futures):
+            if future.result():
+                return True
+
+    return False
+
+def extract_token_from_url(url):
+    parsed_url = urlparse(url)
+    query_params = parse_qs(parsed_url.query)
+    return query_params.get('token', [None])[0]
+
+@app.route('/api/codex', methods=['GET'])
+def start_process():
+    session_url = request.args.get("url")
+    session = extract_token_from_url(session_url)
+    if not session:
+        return jsonify({"error": "Invalid URL or token not found."}), 400
+
+    start_time = time.time()
+    stages = get_stages(session)
+    if not stages:
+        return jsonify({"error": "No stages available or authentication failed."}), 400
+
+    stages_completed = 0
+    validated_tokens = []
+
+    while stages_completed < len(stages):
+        stage_id = stages[stages_completed]['uuid']
+        init_token = initiate_stage(stage_id, session)
+        if not init_token:
+            return jsonify({"error": "Stage initiation failed."}), 400
+
+        sleep(6000)
+
+        token_data = decode_token_data(init_token)
+        referrer = 'https://linkvertise.com/'
+        if 'loot-links' in token_data['link']:
+            referrer = 'https://loot-links.com/'
+        elif 'loot-link' in token_data['link']:
+            referrer = 'https://loot-link.com/'
+
+        validated_token = validate_stage(init_token, referrer, session)
+        if validated_token:
+            validated_tokens.append({'uuid': stage_id, 'token': validated_token})
+        else:
+            return jsonify({"error": "Stage validation failed."}), 400
+
+        stages_completed += 1
+        print(f"{stages_completed}/{len(stages)} stages completed.")
+
+    if authenticate(validated_tokens, session):
+        duration = time.time() - start_time
+        return jsonify({"status": "success", "result": "Whitelist completed successfully.", "time": duration}), 200
+    else:
+        return jsonify({"error": "Authentication failed during final step."}), 400
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
