@@ -49,8 +49,8 @@ def get_stages(session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=2000) as executor:
-        futures = [executor.submit(single_request) for _ in range(2000)]
+    with ThreadPoolExecutor(max_workers=150) as executor:
+        futures = [executor.submit(single_request) for _ in range(150)]
         for future in as_completed(futures):
             result = future.result()
             if result:
