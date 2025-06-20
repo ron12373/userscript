@@ -41,6 +41,10 @@ def get_stages(session):
         try:
             response = requests.get('https://api.codex.lol/v1/stage/stages', headers=headers, timeout=10)
             data = response.json()
+            if data.get('error') == 'invalid-session':
+                return {'error': 'invalid-session', 'message': data.get('userFacingMessage')}
+            if data.get('success', False) and data.get('authenticated', True):
+                return {'authenticated': True}
             if data.get('success', False) and not data.get('authenticated', False):
                 return data.get('stages', [])
         except:
@@ -52,9 +56,9 @@ def get_stages(session):
         for future in as_completed(futures):
             result = future.result()
             if result:
-                return result  # Trả về kết quả đầu tiên thành công
+                return result
 
-    return []  # Nếu tất cả đều thất bại
+    return []
 
 def initiate_stage(stage_id, session):
     def single_request():
@@ -151,8 +155,14 @@ def start_process():
 
     start_time = time.time()
     stages = get_stages(session)
-    if not stages:
-        return jsonify({"error": "No stages available or authentication failed."}), 400
+    if isinstance(stages, dict):
+        if stages.get('error') == 'invalid-session':
+            return jsonify({"status": "success", "result": stages.get('message', "Your session is invalid.")}), 200
+        if stages.get('authenticated') == True:
+            return jsonify({"status": "success", "result": "Whitelist completed successfully."}), 200
+
+        if not stages or not isinstance(stages, list):
+            return jsonify({"error": "No stages available or authentication failed."}), 400
 
     stages_completed = 0
     validated_tokens = []
