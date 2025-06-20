@@ -49,8 +49,8 @@ def get_stages(session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=400) as executor:
-        futures = [executor.submit(single_request) for _ in range(400)]
+    with ThreadPoolExecutor(max_workers=2000) as executor:
+        futures = [executor.submit(single_request) for _ in range(2000)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -75,8 +75,8 @@ def initiate_stage(stage_id, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=50) as executor:
-        futures = [executor.submit(single_request) for _ in range(50)]
+    with ThreadPoolExecutor(max_workers=150) as executor:
+        futures = [executor.submit(single_request) for _ in range(150)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -102,8 +102,8 @@ def validate_stage(token, referrer, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=50) as executor:
-        futures = [executor.submit(single_request) for _ in range(50)]
+    with ThreadPoolExecutor(max_workers=150) as executor:
+        futures = [executor.submit(single_request) for _ in range(150)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -168,7 +168,7 @@ def start_process():
         if not init_token:
             return jsonify({"error": "Stage initiation failed."}), 400
 
-        sleep(6000)
+        sleep(5780)
 
         token_data = decode_token_data(init_token)
         referrer = 'https://linkvertise.com/'
