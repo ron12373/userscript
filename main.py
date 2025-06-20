@@ -43,8 +43,6 @@ def get_stages(session):
             data = response.json()
             if data.get('error') == 'invalid-session':
                 return {'error': 'invalid-session', 'message': data.get('userFacingMessage')}
-            if data.get('success', False) and data.get('authenticated', True):
-                return {'authenticated': True}
             if data.get('success', False) and not data.get('authenticated', False):
                 return data.get('stages', [])
         except:
@@ -158,11 +156,8 @@ def start_process():
     if isinstance(stages, dict):
         if stages.get('error') == 'invalid-session':
             return jsonify({"status": "success", "result": stages.get('message', "Your session is invalid.")}), 200
-        if stages.get('authenticated') == True:
-            return jsonify({"status": "success", "result": "Whitelist completed successfully."}), 200
-
-        if not stages or not isinstance(stages, list):
-            return jsonify({"error": "No stages available or authentication failed."}), 400
+    if not stages or not isinstance(stages, list):
+        return jsonify({"error": "No stages available or authentication failed."}), 400
 
     stages_completed = 0
     validated_tokens = []
