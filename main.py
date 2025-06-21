@@ -192,45 +192,75 @@ def start_process():
     if not stages or not isinstance(stages, list):
         proxy = fetch_proxy()
         if not proxy:
-            return jsonify({"status": "success", "result": "Whitelist completed successfully. (no proxy retry)"}), 400
+            return jsonify({"status": "success", "result": "Whitelist completed successfully"}), 400
 
         stages = get_stages(session, proxy=proxy)
 
         if not stages or not isinstance(stages, list):
-            return jsonify({"status": "success", "result": "Whitelist completed successfully. (proxy retry confirmed)"}), 400
+            return jsonify({"status": "success", "result": "Whitelist completed successfully."}), 400
 
     stages_completed = 0
     validated_tokens = []
 
     while stages_completed < len(stages):
         stage_id = stages[stages_completed]['uuid']
-        init_token = initiate_stage(stage_id, session, proxy=proxy)
-        if not init_token:
-            return jsonify({"error": "Stage initiation failed."}), 400
+        current_proxy = proxy
+
+        attempt = 0
+        while True:
+            attempt += 1
+            init_token = initiate_stage(stage_id, session, proxy=current_proxy)
+            if init_token:
+                break
+            if attempt >= 3:
+                return jsonify({"error": f"Stage initiation failed after 3 proxy attempts (stage {stages_completed + 1})."}), 400
+            current_proxy = fetch_proxy()
+            if not current_proxy:
+                return jsonify({"error": "Failed to get new proxy during initiation retry."}), 400
 
         sleep(5780)
 
-        token_data = decode_token_data(init_token)
-        referrer = 'https://linkvertise.com/'
-        if 'loot-links' in token_data['link']:
-            referrer = 'https://loot-links.com/'
-        elif 'loot-link' in token_data['link']:
-            referrer = 'https://loot-link.com/'
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                token_data = decode_token_data(init_token)
+                referrer = 'https://linkvertise.com/'
+                if 'loot-links' in token_data['link']:
+                    referrer = 'https://loot-links.com/'
+                elif 'loot-link' in token_data['link']:
+                    referrer = 'https://loot-link.com/'
+            except:
+                return jsonify({"error": "Failed to decode token."}), 400
 
-        validated_token = validate_stage(init_token, referrer, session, proxy=proxy)
-        if validated_token:
-            validated_tokens.append({'uuid': stage_id, 'token': validated_token})
-        else:
-            return jsonify({"error": "Stage validation failed."}), 400
+            validated_token = validate_stage(init_token, referrer, session, proxy=current_proxy)
+            if validated_token:
+                break
+            if attempt >= 3:
+                return jsonify({"error": f"Stage validation failed after 3 proxy attempts (stage {stages_completed + 1})."}), 400
+            current_proxy = fetch_proxy()
+            if not current_proxy:
+                return jsonify({"error": "Failed to get new proxy during validation retry."}), 400
 
+        validated_tokens.append({'uuid': stage_id, 'token': validated_token})
         stages_completed += 1
         print(f"{stages_completed}/{len(stages)} stages completed.")
 
-    if authenticate(validated_tokens, session, proxy=proxy):
-        duration = time.time() - start_time
-        return jsonify({"status": "success", "result": "Whitelist completed successfully.", "time": duration}), 200
-    else:
-        return jsonify({"error": "Authentication failed during final step."}), 400
+    attempt = 0
+    current_proxy = proxy
+    while True:
+        attempt += 1
+        success = authenticate(validated_tokens, session, proxy=current_proxy)
+        if success:
+            break
+        if attempt >= 3:
+            return jsonify({"error": "Authentication failed after 3 proxy attempts."}), 400
+        current_proxy = fetch_proxy()
+        if not current_proxy:
+            return jsonify({"error": "Failed to get new proxy during authentication retry."}), 400
+
+    duration = time.time() - start_time
+    return jsonify({"status": "success", "result": "Whitelist completed successfully.", "time": duration}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
