@@ -6,6 +6,12 @@ from urllib.parse import urlparse, parse_qs
 import random
 from flask import Flask, request, jsonify
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import Thread, Event
+
+keep_alive_thread = None
+stop_event = Event()
+last_session = None
+last_validated_tokens = None
 
 app = Flask(__name__)
 
@@ -144,12 +150,30 @@ def extract_token_from_url(url):
     query_params = parse_qs(parsed_url.query)
     return query_params.get('token', [None])[0]
 
+def keep_alive_authenticate_loop(validated_tokens, session):
+    while not stop_event.is_set():
+        print(f"[🔄] Keep-alive authenticate running for session {session[:6]}...")
+        try:
+            authenticate(validated_tokens, session)
+        except Exception as e:
+            print("[❌] Error in keep-alive authenticate:", e)
+        time.sleep(25)  # giữ alive mỗi 25s (tùy chỉnh theo an toàn)
+
 @app.route('/api/codex', methods=['GET'])
 def start_process():
+    global keep_alive_thread, stop_event, last_session, last_validated_tokens
+
     session_url = request.args.get("url")
     session = extract_token_from_url(session_url)
     if not session:
         return jsonify({"error": "Invalid URL or token not found."}), 400
+
+    # Nếu session mới, dừng thread cũ
+    if session != last_session:
+        if keep_alive_thread and keep_alive_thread.is_alive():
+            print("[⛔] Stopping old keep-alive thread...")
+            stop_event.set()
+            keep_alive_thread.join()
 
     start_time = time.time()
     stages = get_stages(session)
@@ -157,7 +181,7 @@ def start_process():
         if stages.get('error') == 'invalid-session':
             return jsonify({"status": "success", "result": stages.get('message', "Your session is invalid.")}), 200
     if not stages or not isinstance(stages, list):
-        return jsonify({"status": "success","result":"Whitelist completed successfully."}), 400
+        return jsonify({"status": "success", "result": "Whitelist completed successfully."}), 400
 
     stages_completed = 0
     validated_tokens = []
@@ -168,7 +192,7 @@ def start_process():
         if not init_token:
             return jsonify({"error": "Stage initiation failed."}), 400
 
-        sleep(5780)
+        sleep(5780)  # delay để tránh bị block
 
         token_data = decode_token_data(init_token)
         referrer = 'https://linkvertise.com/'
@@ -188,6 +212,17 @@ def start_process():
 
     if authenticate(validated_tokens, session):
         duration = time.time() - start_time
+        print("[✅] Authentication complete, starting keep-alive thread...")
+        
+        # Lưu lại để giữ ngầm
+        last_session = session
+        last_validated_tokens = validated_tokens
+
+        # Reset lại event, khởi động thread mới
+        stop_event = Event()
+        keep_alive_thread = Thread(target=keep_alive_authenticate_loop, args=(validated_tokens, session))
+        keep_alive_thread.start()
+
         return jsonify({"status": "success", "result": "Whitelist completed successfully.", "time": duration}), 200
     else:
         return jsonify({"error": "Authentication failed during final step."}), 400
