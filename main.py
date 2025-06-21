@@ -32,14 +32,27 @@ def decode_token_data(token):
     data = base64decode(data)
     return json.loads(data)
 
-def get_stages(session):
+def fetch_proxy():
+    try:
+        res = requests.get("http://67.220.85.146:6123/proxy-request", timeout=5)
+        data = res.json()
+        return data.get("proxy")
+    except:
+        return None
+
+def get_stages(session, proxy=None):
     def single_request():
         headers = {
             'Android-Session': session,
             'User-Agent': random.choice(user_agents)
         }
         try:
-            response = requests.get('https://api.codex.lol/v1/stage/stages', headers=headers, timeout=10)
+            response = requests.get(
+                'https://api.codex.lol/v1/stage/stages',
+                headers=headers,
+                proxies={"http": proxy, "https": proxy} if proxy else None,
+                timeout=10
+            )
             data = response.json()
             if data.get('error') == 'invalid-session':
                 return {'error': 'invalid-session', 'message': data.get('userFacingMessage')}
@@ -58,7 +71,7 @@ def get_stages(session):
 
     return []
 
-def initiate_stage(stage_id, session):
+def initiate_stage(stage_id, session, proxy=None):
     def single_request():
         headers = {
             'Android-Session': session,
@@ -67,7 +80,13 @@ def initiate_stage(stage_id, session):
         }
         body = json.dumps({"stageId": stage_id})
         try:
-            response = requests.post('https://api.codex.lol/v1/stage/initiate', headers=headers, data=body, timeout=10)
+            response = requests.post(
+                'https://api.codex.lol/v1/stage/initiate',
+                headers=headers,
+                data=body,
+                proxies={"http": proxy, "https": proxy} if proxy else None,
+                timeout=10
+            )
             data = response.json()
             if data.get('success', False):
                 return data.get('token')
@@ -84,7 +103,7 @@ def initiate_stage(stage_id, session):
 
     return None
 
-def validate_stage(token, referrer, session):
+def validate_stage(token, referrer, session, proxy=None):
     def single_request():
         headers = {
             'Android-Session': session,
@@ -94,7 +113,13 @@ def validate_stage(token, referrer, session):
         }
         body = json.dumps({"token": token})
         try:
-            response = requests.post('https://api.codex.lol/v1/stage/validate', headers=headers, data=body, timeout=10)
+            response = requests.post(
+                'https://api.codex.lol/v1/stage/validate',
+                headers=headers,
+                data=body,
+                proxies={"http": proxy, "https": proxy} if proxy else None,
+                timeout=10
+            )
             data = response.json()
             if data.get('success', False):
                 return data.get('token')
@@ -111,8 +136,7 @@ def validate_stage(token, referrer, session):
 
     return None
 
-
-def authenticate(validated_tokens, session):
+def authenticate(validated_tokens, session, proxy=None):
     def single_request():
         headers = {
             'Android-Session': session,
@@ -121,7 +145,13 @@ def authenticate(validated_tokens, session):
         }
         body = json.dumps({"tokens": validated_tokens})
         try:
-            response = requests.post('https://api.codex.lol/v1/stage/authenticate', headers=headers, data=body, timeout=10)
+            response = requests.post(
+                'https://api.codex.lol/v1/stage/authenticate',
+                headers=headers,
+                data=body,
+                proxies={"http": proxy, "https": proxy} if proxy else None,
+                timeout=10
+            )
             data = response.json()
             if 'userFacingMessage' in data:
                 print("API message: ", data['userFacingMessage'])
@@ -152,19 +182,29 @@ def start_process():
         return jsonify({"error": "Invalid URL or token not found."}), 400
 
     start_time = time.time()
+    proxy = None
     stages = get_stages(session)
+
     if isinstance(stages, dict):
         if stages.get('error') == 'invalid-session':
             return jsonify({"status": "error", "message": stages.get('message', "Your session is invalid.")}), 200
+
     if not stages or not isinstance(stages, list):
-        return jsonify({"status": "success","result":"Whitelist completed successfully."}), 400
+        proxy = fetch_proxy()
+        if not proxy:
+            return jsonify({"status": "success", "result": "Whitelist completed successfully. (no proxy retry)"}), 400
+
+        stages = get_stages(session, proxy=proxy)
+
+        if not stages or not isinstance(stages, list):
+            return jsonify({"status": "success", "result": "Whitelist completed successfully. (proxy retry confirmed)"}), 400
 
     stages_completed = 0
     validated_tokens = []
 
     while stages_completed < len(stages):
         stage_id = stages[stages_completed]['uuid']
-        init_token = initiate_stage(stage_id, session)
+        init_token = initiate_stage(stage_id, session, proxy=proxy)
         if not init_token:
             return jsonify({"error": "Stage initiation failed."}), 400
 
@@ -177,7 +217,7 @@ def start_process():
         elif 'loot-link' in token_data['link']:
             referrer = 'https://loot-link.com/'
 
-        validated_token = validate_stage(init_token, referrer, session)
+        validated_token = validate_stage(init_token, referrer, session, proxy=proxy)
         if validated_token:
             validated_tokens.append({'uuid': stage_id, 'token': validated_token})
         else:
@@ -186,7 +226,7 @@ def start_process():
         stages_completed += 1
         print(f"{stages_completed}/{len(stages)} stages completed.")
 
-    if authenticate(validated_tokens, session):
+    if authenticate(validated_tokens, session, proxy=proxy):
         duration = time.time() - start_time
         return jsonify({"status": "success", "result": "Whitelist completed successfully.", "time": duration}), 200
     else:
