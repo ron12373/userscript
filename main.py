@@ -10,11 +10,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 app = Flask(__name__)
 
 user_agents = [
-    "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
-    "Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.92 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.199 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.178 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.129 Safari/537.36"
 ]
 
 def sleep(ms):
@@ -49,8 +49,8 @@ def get_stages(session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=150) as executor:
-        futures = [executor.submit(single_request) for _ in range(150)]
+    with ThreadPoolExecutor(max_workers=600) as executor:
+        futures = [executor.submit(single_request) for _ in range(600)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -131,8 +131,8 @@ def authenticate(validated_tokens, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=600) as executor:
-        futures = [executor.submit(single_request) for _ in range(600)]
+    with ThreadPoolExecutor(max_workers=200) as executor:
+        futures = [executor.submit(single_request) for _ in range(200)]
         for future in as_completed(futures):
             if future.result():
                 return True
@@ -157,7 +157,7 @@ def start_process():
         if stages.get('error') == 'invalid-session':
             return jsonify({"status": "success", "result": stages.get('message', "Your session is invalid.")}), 200
     if not stages or not isinstance(stages, list):
-        return jsonify({"status": "success","result":"Whitelist completed successfully."}), 400
+        return jsonify({"status": "error","result":"Failed to whitelisted."}), 400
 
     stages_completed = 0
     validated_tokens = []
