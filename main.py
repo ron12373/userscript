@@ -157,7 +157,7 @@ def start_process():
         if stages.get('error') == 'invalid-session':
             return jsonify({"status": "success", "result": stages.get('message', "Your session is invalid.")}), 200
     if not stages or not isinstance(stages, list):
-        return jsonify({"status": "error","result":"Failed to whitelisted."}), 400
+        return jsonify({"status": "error","message":"Failed to whitelisted."}), 400
 
     stages_completed = 0
     validated_tokens = []
