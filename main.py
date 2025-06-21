@@ -157,7 +157,7 @@ def keep_alive_authenticate_loop(validated_tokens, session):
             authenticate(validated_tokens, session)
         except Exception as e:
             print("[❌] Error in keep-alive authenticate:", e)
-        time.sleep(25)  # giữ alive mỗi 25s (tùy chỉnh theo an toàn)
+        time.sleep(5)
 
 @app.route('/api/codex', methods=['GET'])
 def start_process():
