@@ -34,7 +34,6 @@ def decode_token_data(token):
 
 def get_stages(session_url):
     try:
-        # Gọi đến proxy check-session, dùng chính URL người dùng truyền vào
         check_api_url = f"http://87.106.100.210:6410/api/check-session?url={session_url}"
         headers = {
             'User-Agent': random.choice(user_agents)
@@ -68,8 +67,8 @@ def initiate_stage(stage_id, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = [executor.submit(single_request) for _ in range(5)]
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        futures = [executor.submit(single_request) for _ in range(1)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -95,8 +94,8 @@ def validate_stage(token, referrer, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = [executor.submit(single_request) for _ in range(5)]
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        futures = [executor.submit(single_request) for _ in range(1)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -124,8 +123,8 @@ def authenticate(validated_tokens, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = [executor.submit(single_request) for _ in range(5)]
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        futures = [executor.submit(single_request) for _ in range(1)]
         for future in as_completed(futures):
             if future.result():
                 return True
@@ -157,24 +156,34 @@ def start_process():
 
     while stages_completed < len(stages):
         stage_id = stages[stages_completed]['uuid']
-        init_token = initiate_stage(stage_id, session)
-        if not init_token:
-            return jsonify({"error": "Stage initiation failed."}), 400
+        success = False
 
-        sleep(5800)
+        for attempt in range(3):
+            print(f"Attempt {attempt + 1} for stage {stages_completed + 1}/{len(stages)}")
+            init_token = initiate_stage(stage_id, session)
+            if not init_token:
+                print("Initiate failed.")
+                continue
 
-        token_data = decode_token_data(init_token)
-        referrer = 'https://linkvertise.com/'
-        if 'loot-links' in token_data['link']:
-            referrer = 'https://loot-links.com/'
-        elif 'loot-link' in token_data['link']:
-            referrer = 'https://loot-link.com/'
+            sleep(5500)
 
-        validated_token = validate_stage(init_token, referrer, session)
-        if validated_token:
-            validated_tokens.append({'uuid': stage_id, 'token': validated_token})
-        else:
-            return jsonify({"error": "Stage validation failed."}), 400
+            token_data = decode_token_data(init_token)
+            referrer = 'https://linkvertise.com/'
+            if 'loot-links' in token_data['link']:
+                referrer = 'https://loot-links.com/'
+            elif 'loot-link' in token_data['link']:
+                referrer = 'https://loot-link.com/'
+
+            validated_token = validate_stage(init_token, referrer, session)
+            if validated_token:
+                validated_tokens.append({'uuid': stage_id, 'token': validated_token})
+                success = True
+                break
+            else:
+                print("Validation failed.")
+
+        if not success:
+            return jsonify({"error": f"Stage {stages_completed + 1} failed after 3 attempts."}), 400
 
         stages_completed += 1
         print(f"{stages_completed}/{len(stages)} stages completed.")
@@ -183,7 +192,7 @@ def start_process():
         duration = time.time() - start_time
         return jsonify({"status": "success", "result": "Whitelist completed successfully.", "time": duration}), 200
     else:
-        return jsonify({"error": "Authentication failed during final step."}), 400
+        return jsonify({"status": "error", "message": "Authentication failed during final step."}), 400
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
