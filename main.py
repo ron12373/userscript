@@ -68,8 +68,8 @@ def initiate_stage(stage_id, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=25) as executor:
-        futures = [executor.submit(single_request) for _ in range(25)]
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        futures = [executor.submit(single_request) for _ in range(1)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -95,8 +95,8 @@ def validate_stage(token, referrer, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=25) as executor:
-        futures = [executor.submit(single_request) for _ in range(25)]
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        futures = [executor.submit(single_request) for _ in range(1)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -124,8 +124,8 @@ def authenticate(validated_tokens, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=25) as executor:
-        futures = [executor.submit(single_request) for _ in range(25)]
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        futures = [executor.submit(single_request) for _ in range(1)]
         for future in as_completed(futures):
             if future.result():
                 return True
