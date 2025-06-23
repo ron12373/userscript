@@ -67,8 +67,8 @@ def initiate_stage(stage_id, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=25) as executor:
-        futures = [executor.submit(single_request) for _ in range(25)]
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [executor.submit(single_request) for _ in range(5)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -94,8 +94,8 @@ def validate_stage(token, referrer, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=25) as executor:
-        futures = [executor.submit(single_request) for _ in range(25)]
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [executor.submit(single_request) for _ in range(5)]
         for future in as_completed(futures):
             result = future.result()
             if result:
@@ -123,8 +123,8 @@ def authenticate(validated_tokens, session):
             return None
         return None
 
-    with ThreadPoolExecutor(max_workers=25) as executor:
-        futures = [executor.submit(single_request) for _ in range(25)]
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [executor.submit(single_request) for _ in range(5)]
         for future in as_completed(futures):
             if future.result():
                 return True
@@ -157,17 +157,15 @@ def start_process():
     while stages_completed < len(stages):
         stage_id = stages[stages_completed]['uuid']
         success = False
-        current_sleep = 5800
 
         for attempt in range(3):
             print(f"Attempt {attempt + 1} for stage {stages_completed + 1}/{len(stages)}")
             init_token = initiate_stage(stage_id, session)
             if not init_token:
                 print("Initiate failed.")
-                current_sleep = 7000
                 continue
 
-            sleep(current_sleep)
+            sleep(5800)
 
             token_data = decode_token_data(init_token)
             referrer = 'https://linkvertise.com/'
@@ -179,12 +177,10 @@ def start_process():
             validated_token = validate_stage(init_token, referrer, session)
             if validated_token:
                 validated_tokens.append({'uuid': stage_id, 'token': validated_token})
-                current_sleep = 5800
                 success = True
                 break
             else:
                 print("Validation failed.")
-                current_sleep = 7000
 
         if not success:
             return jsonify({"error": f"Stage {stages_completed + 1} failed after 3 attempts."}), 400
