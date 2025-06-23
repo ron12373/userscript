@@ -165,7 +165,7 @@ def start_process():
                 print("Initiate failed.")
                 continue
 
-            sleep(5800)
+            sleep(6500)
 
             token_data = decode_token_data(init_token)
             referrer = 'https://linkvertise.com/'
