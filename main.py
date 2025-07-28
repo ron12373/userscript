@@ -8,7 +8,7 @@ def bypass_redirect():
     if not original_url:
         return jsonify({"status": "error", "message": "Missing URL parameter"}), 400
 
-    bypass_url = f"http://bypass.html?url={original_url}"
+    bypass_url = f"http://87.106.44.40:6357/bypass.html?url={original_url}"
     return jsonify({"status":"success","result": bypass_url}), 200
 
 if __name__ == '__main__':
