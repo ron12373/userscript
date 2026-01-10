@@ -7,36 +7,6 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 CORS(app)
 
-banned_ips = set()
-ban_lock = threading.Lock()
-
-@app.before_request
-def check_banned():
-    client_ip = get_client_ip()
-    if client_ip in banned_ips:
-        return Response("You Have Been Blocked", status=403, mimetype="text/plain")
-
-@app.route("/", methods=["GET"])
-def handle_root():
-    client_ip = get_client_ip()
-    with ban_lock:
-        banned_ips.add(client_ip)
-    print(f"[SECURITY] IP {client_ip} has been banned for accessing root URL.")
-    return Response("You Have Been Blocked", status=403, mimetype="text/plain")
-
-@app.route("/uban-all", methods=["GET"])
-def unban_all():
-    global banned_ips
-    with ban_lock:
-        count = len(banned_ips)
-        banned_ips.clear()
-    
-    print(f"[SECURITY] All IPs have been unbanned. Cleared {count} entries.")
-    return Response(
-        json.dumps({"status": "success", "message": f"Successfully unbanned {count} IPs"}, separators=(",", ":")),
-        mimetype="application/json"
-    )
-
 SUPPORTED_DOMAINS = [
     "linkvertise.com",
     "direct-link.net",
