@@ -78,9 +78,6 @@ PASTERSO_API_BYPASS = "http://156.226.175.176:3000/pasterso"
 API_BYPASS_KEY = "buicon2011"
 SECRET_TOKEN = "BeaconHub200K@ThankYou"
 
-# FREE KEY
-FREE_KEY = "BaconButProPremiumTrial"
-
 cached_keys = set()
 cache_last_updated = None
 cache_lock = threading.Lock()
@@ -252,15 +249,6 @@ def access():
         ip = get_client_ip()
         print(f"[ACCESS] Client IP: {ip}")
         
-        # Check if it's free key
-        if key == FREE_KEY:
-            print(f"[ACCESS] Free key used: {FREE_KEY}")
-            # Trả về response đúng định dạng cũ
-            return Response(
-                json.dumps({"status": "key valid", "whitelist": "IP Whitelisted"}, separators=(",", ":")),
-                mimetype="application/json",
-            )
-        
         keys = get_cached_keys()
         
         if key not in keys:
@@ -388,47 +376,38 @@ def bypass():
         print("[FAILED] Invalid HMAC - Missing X-Auth-Token header")
         return Response(json.dumps({"error": "Missing Auth Token API (HMAC)"}, separators=(",", ":")), mimetype="application/json"), 401
 
-    client_ip = get_client_ip()
-    
-    # Check if it's free key
-    if api_key == FREE_KEY:
-        print(f"[FREE KEY] Free key used for URL: {url}, IP: {client_ip}")
-        # Bypass all IP and key checks for free key
-        # Không cần kiểm tra key-list và verify-check
-        print(f"[PASS] Security check passed for IP: {client_ip}, API key: {api_key} (FREE KEY), URL: {url}")
-    else:
-        # Normal key verification
+    try:
         try:
-            try:
-                r_keys = requests.get(f"{SUB_API}/key-list", timeout=30)
-            except requests.exceptions.RequestException:
-                print("[FAILED] Invalid HMAC - Cannot connect to SUB_API key-list")
-                return handle_connection_error("SUB_API key-list")
+            r_keys = requests.get(f"{SUB_API}/key-list", timeout=30)
+        except requests.exceptions.RequestException:
+            print("[FAILED] Invalid HMAC - Cannot connect to SUB_API key-list")
+            return handle_connection_error("SUB_API key-list")
 
-            if api_key not in r_keys.text.splitlines():
-                print(f"[FAILED] Invalid HMAC - API key not found in key-list: {api_key}")
-                return Response(json.dumps({"error": "Missing Auth Token API (HMAC)"}, separators=(",", ":")), mimetype="application/json"), 401
+        if api_key not in r_keys.text.splitlines():
+            print(f"[FAILED] Invalid HMAC - API key not found in key-list: {api_key}")
+            return Response(json.dumps({"error": "Missing Auth Token API (HMAC)"}, separators=(",", ":")), mimetype="application/json"), 401
 
-            try:
-                r_verify = requests.get(f"{SUB_API}/verify-check?ip={client_ip}&key={api_key}", timeout=30)
-            except requests.exceptions.RequestException:
-                print(f"[FAILED] Invalid HMAC - Cannot connect to SUB_API verify-check for IP: {client_ip}")
-                return handle_connection_error("SUB_API verify-check")
+        client_ip = get_client_ip()
+        try:
+            r_verify = requests.get(f"{SUB_API}/verify-check?ip={client_ip}&key={api_key}", timeout=30)
+        except requests.exceptions.RequestException:
+            print(f"[FAILED] Invalid HMAC - Cannot connect to SUB_API verify-check for IP: {client_ip}")
+            return handle_connection_error("SUB_API verify-check")
 
-            try:
-                verify_data = r_verify.json()
-            except ValueError:
-                print(f"[FAILED] Invalid HMAC - Invalid JSON response from verify-check. Response: {r_verify.text}")
-                return Response(json.dumps({"error": "Missing Auth Token API (HMAC)"}, separators=(",", ":")), mimetype="application/json"), 401
+        try:
+            verify_data = r_verify.json()
+        except ValueError:
+            print(f"[FAILED] Invalid HMAC - Invalid JSON response from verify-check. Response: {r_verify.text}")
+            return Response(json.dumps({"error": "Missing Auth Token API (HMAC)"}, separators=(",", ":")), mimetype="application/json"), 401
 
-            if verify_data.get("access") != "True":
-                print(f"[FAILED] Invalid HMAC - Access denied for IP: {client_ip}, API key: {api_key}. Response: {verify_data}")
-                return Response(json.dumps({"error": "Missing Auth Token API (HMAC)"}, separators=(",", ":")), mimetype="application/json"), 401
-        except Exception as e:
-            print(f"[FAILED] Invalid HMAC - Exception during verification: {str(e)}")
-            return Response(json.dumps({"error": str(e)}, separators=(",", ":")), mimetype="application/json"), 500
+        if verify_data.get("access") != "True":
+            print(f"[FAILED] Invalid HMAC - Access denied for IP: {client_ip}, API key: {api_key}. Response: {verify_data}")
+            return Response(json.dumps({"error": "Missing Auth Token API (HMAC)"}, separators=(",", ":")), mimetype="application/json"), 401
+    except Exception as e:
+        print(f"[FAILED] Invalid HMAC - Exception during verification: {str(e)}")
+        return Response(json.dumps({"error": str(e)}, separators=(",", ":")), mimetype="application/json"), 500
 
-        print(f"[PASS] Security check passed for IP: {client_ip}, API key: {api_key}, URL: {url}")
+    print(f"[PASS] Security check passed for IP: {client_ip}, API key: {api_key}, URL: {url}")
 
     if is_pasterso_domain:
         try:
