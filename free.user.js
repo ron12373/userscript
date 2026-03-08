@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          API
 // @namespace     http://tampermonkey.net/
-// @version       1.1
+// @version       1.2
 // @description   Mr API
 // @author        API
 // @match         *://rekonise.com/*
@@ -41,6 +41,8 @@
 // @match         *://ntt-hub.xyz/key/ntt-hub.html?hwid=*
 // @match         *://ntt-hub.xyz/key/ntt-hub?hwid=*
 // @match         *://ldnesfspublic.org/*
+// @match         *://blog.tapvietcode.com/*
+// @match         *://link4sub.com/*
 // @icon          https://i.ibb.co/GfnCW8X1/download.png
 // @grant         none
 // @downloadURL https://github.com/ron12373/userscript/raw/main/free.user.js
@@ -369,5 +371,6 @@
         }
     });
 })();
+
 
 
