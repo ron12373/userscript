@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          API
 // @namespace     http://tampermonkey.net/
-// @version       1.0
+// @version       1.1
 // @description   Mr API
 // @author        API
 // @match         *://rekonise.com/*
@@ -49,16 +49,29 @@
 
     const style = document.createElement('style');
     style.innerHTML = `
-        #ts-particle-bg {
+        #ts-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 9999;
-            pointer-events: none;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2147483647;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        #ts-particle-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-            background: #0a0a0a;
+            z-index: 1;
         }
         .particle {
             position: absolute;
@@ -90,13 +103,9 @@
                 opacity: 0.2;
             }
         }
-
         #ts-bridge-wrapper {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10000;
+            position: relative;
+            z-index: 2;
             background: rgba(20, 20, 30, 0.85);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -106,11 +115,9 @@
             box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, 0 0 40px rgba(0, 100, 255, 0.2);
             width: 450px;
             text-align: center;
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: #f0f0f0;
             transition: all 0.3s ease;
         }
-
         .ts-title {
             font-size: 20px;
             font-weight: 500;
@@ -119,7 +126,6 @@
             color: #ffffff;
             text-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
         }
-
         #ts-iframe-container {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 22px;
@@ -129,7 +135,6 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7);
         }
-
         #ts-iframe {
             width: 320px;
             height: 70px;
@@ -137,7 +142,6 @@
             display: block;
             border-radius: 10px;
         }
-
         #ts-status-container {
             margin-top: 16px;
             display: flex;
@@ -147,7 +151,6 @@
             color: #aac8ff;
             font-size: 15px;
         }
-
         .loading-spinner {
             border: 3px solid rgba(255,255,255,0.15);
             border-top: 3px solid #5f9eff;
@@ -156,12 +159,10 @@
             height: 20px;
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         #ts-result {
             display: none;
             margin-top: 22px;
@@ -177,17 +178,14 @@
             white-space: pre-wrap;
             word-wrap: break-word;
         }
-
         .success-box {
             border-left: 5px solid #2ecc71;
             background: rgba(46, 204, 113, 0.15);
         }
-
         .error-box {
             border-left: 5px solid #e74c3c;
             background: rgba(231, 76, 60, 0.15);
         }
-
         .result-text {
             margin-bottom: 14px;
             font-family: 'SF Mono', 'Fira Code', monospace;
@@ -195,14 +193,12 @@
             white-space: pre-wrap;
             word-wrap: break-word;
         }
-
         .result-actions {
             display: flex;
             gap: 16px;
             justify-content: center;
             margin-top: 20px;
         }
-
         .result-actions button {
             background: rgba(40, 40, 60, 0.95);
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -217,26 +213,23 @@
             box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
             letter-spacing: 0.5px;
         }
-
         .result-actions button:hover {
             background: rgba(70, 70, 110, 0.95);
             transform: translateY(-3px);
             border-color: rgba(255, 255, 255, 0.4);
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.7);
         }
-
         .hidden {
             display: none !important;
         }
     `;
     document.head.appendChild(style);
 
-    document.head.innerHTML = '';
-    document.head.appendChild(style);
-    document.body.innerHTML = '';
+    const overlay = document.createElement('div');
+    overlay.id = 'ts-overlay';
 
-    const bg = document.createElement('div');
-    bg.id = 'ts-particle-bg';
+    const particleBg = document.createElement('div');
+    particleBg.id = 'ts-particle-bg';
     for (let i = 0; i < 45; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
@@ -248,9 +241,9 @@
         particle.style.animationDelay = Math.random() * 8 + 's';
         particle.style.animationDuration = (8 + Math.random() * 10) + 's';
         particle.style.background = `rgba(255, 255, 255, ${0.1 + Math.random() * 0.2})`;
-        bg.appendChild(particle);
+        particleBg.appendChild(particle);
     }
-    document.body.appendChild(bg);
+    overlay.appendChild(particleBg);
 
     const wrapper = document.createElement('div');
     wrapper.id = "ts-bridge-wrapper";
@@ -273,7 +266,8 @@
             <button id="ts-open-btn" style="display: none;">Open</button>
         </div>
     `;
-    document.body.appendChild(wrapper);
+    overlay.appendChild(wrapper);
+    document.body.appendChild(overlay);
 
     const iframeContainer = document.getElementById('ts-iframe-container');
     const statusContainer = document.getElementById('ts-status-container');
@@ -282,6 +276,7 @@
     const copyBtn = document.getElementById('ts-copy-btn');
     const downloadBtn = document.getElementById('ts-download-btn');
     const openBtn = document.getElementById('ts-open-btn');
+    const titleEl = document.querySelector('.ts-title');
 
     function escapeHtml(unsafe) {
         return unsafe
@@ -296,6 +291,7 @@
         iframeContainer.classList.add('hidden');
         statusContainer.classList.remove('hidden');
         actionsDiv.style.display = 'none';
+        titleEl.textContent = 'Fetching API';
 
         try {
             const response = await fetch('https://userscript.baconbypass.online/adlink', {
@@ -310,6 +306,7 @@
             const data = await response.json();
             statusContainer.classList.add('hidden');
             resultBox.style.display = "block";
+            titleEl.textContent = 'Bypass Successful';
 
             if (data.status === "success") {
                 const resultText = data.result;
@@ -359,6 +356,7 @@
             resultBox.className = "error-box";
             resultBox.innerText = "Connection Failed: " + err.message;
             actionsDiv.style.display = 'none';
+            titleEl.textContent = 'Bypass Successful';
         }
     }
 
@@ -367,7 +365,4 @@
             sendToApi(event.data.token);
         }
     });
-
-
 })();
-
