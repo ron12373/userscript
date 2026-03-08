@@ -38,7 +38,8 @@
 // @match         *://sub2unlock.com/*
 // @match         *://sub2unlocksl.com/*
 // @match         *://trigonevo.com/auth/android*
-// @match         *://ntt-hub.xyz/*
+// @match         *://ntt-hub.xyz/key/ntt-hub.html?hwid=*
+// @match         *://ntt-hub.xyz/key/ntt-hub?hwid=*
 // @match         *://ldnesfspublic.org/*
 // @icon          https://i.ibb.co/GfnCW8X1/download.png
 // @grant         none
@@ -368,4 +369,5 @@
         }
     });
 })();
+
 
