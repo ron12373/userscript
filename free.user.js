@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          API
 // @namespace     http://tampermonkey.net/
-// @version       2.4
+// @version       1.0
 // @description   Mr API
 // @author        API
 // @match         *://rekonise.com/*
@@ -370,3 +370,4 @@
 
 
 })();
+
