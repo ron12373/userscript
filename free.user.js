@@ -42,6 +42,8 @@
 // @match         *://ldnesfspublic.org/*
 // @icon          https://i.ibb.co/GfnCW8X1/download.png
 // @grant         none
+// @downloadURL https://github.com/ron12373/userscript/raw/main/free.user.js
+// @updateURL https://github.com/ron12373/userscript/raw/main/free.user.js
 // ==/UserScript==
 
 (function() {
@@ -366,3 +368,4 @@
         }
     });
 })();
+
