@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          API
 // @namespace     http://tampermonkey.net/
-// @version       1.2
+// @version       1.3
 // @description   Mr API
 // @author        API
 // @match         *://rekonise.com/*
@@ -25,12 +25,12 @@
 // @match         *://link-unlock.com/*
 // @match         *://boost.ink/*
 // @match         *://mboost.me/*
-// @match         *://linkvertise.com/*
-// @match         *://direct-link.net/*
-// @match         *://link-hub.net/*
-// @match         *://link-target.net/*
-// @match         *://link-center.net/*
-// @match         *://link-to.net/*
+// @match         *://linkvertise.com/*/*
+// @match         *://direct-link.net/*/*
+// @match         *://link-hub.net/*/*
+// @match         *://link-target.net/*/*
+// @match         *://link-center.net/*/*
+// @match         *://link-to.net/*/*
 // @match         *://neoxsoftworks.eu/*
 // @match         *://robloxscripts.gg/*
 // @match         *://socialwolvez.com/*
@@ -371,6 +371,7 @@
         }
     });
 })();
+
 
 
 
