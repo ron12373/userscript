@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          API
 // @namespace     http://tampermonkey.net/
-// @version       1.3
+// @version       1.4
 // @description   Mr API
 // @author        API
 // @match         *://rekonise.com/*
@@ -43,6 +43,7 @@
 // @match         *://ldnesfspublic.org/*
 // @match         *://blog.tapvietcode.com/*
 // @match         *://link4sub.com/*
+// @match         *://linkunlocker.com/*
 // @icon          https://i.ibb.co/GfnCW8X1/download.png
 // @grant         none
 // @downloadURL https://github.com/ron12373/userscript/raw/main/free.user.js
@@ -371,6 +372,7 @@
         }
     });
 })();
+
 
 
 
