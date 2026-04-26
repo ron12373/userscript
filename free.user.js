@@ -22,6 +22,7 @@
 // @match         *://lootdest.com/*
 // @match         *://links-loot.com/*
 // @match         *://linksloot.net/*
+// @match         *://links.lootlabs.gg/*
 // @match         *://link-unlock.com/*
 // @match         *://boost.ink/*
 // @match         *://mboost.me/*
