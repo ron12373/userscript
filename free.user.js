@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          API
 // @namespace     http://tampermonkey.net/
-// @version       1.5
+// @version       1.6
 // @description   Mr API
 // @author        API
 // @match         *://rekonise.com/*
@@ -47,6 +47,12 @@
 // @match         *://rentry.co/*
 // @match         *://scriptblox.club/*
 // @match         *://scriptix.live/*
+// @match         *://rentry.co/*
+// @match         *://linkzy.space/*
+// @match         *://sub4unlock.com/*
+// @match         *://sub4unlock.pro/*
+// @match         *://sub4unlock.co/*
+// @match         *://subnise.com/*
 // @icon          https://i.ibb.co/GfnCW8X1/download.png
 // @grant         none
 // @downloadURL https://github.com/ron12373/userscript/raw/main/free.user.js
