@@ -1,208 +1,280 @@
 // ==UserScript==
-// @name          API
-// @namespace     http://tampermonkey.net/
-// @version       1.6
-// @description   Mr API
-// @author        API
-// @match         *://rekonise.com/*
-// @match         *://auth.platorelay.com/*
-// @match         *://auth.platoboost.app/*
-// @match         *://auth.platoboost.me/*
-// @match         *://go.linkify.ru/*
-// @match         *://paste-drop.com/*
-// @match         *://pastefy.app/*
-// @match         *://scriptpastebins.com/*
-// @match         *://pastebin.com/*
-// @match         *://loot-link.com/*
-// @match         *://loot-links.com/*
-// @match         *://lootlink.org/*
-// @match         *://lootlinks.co/*
-// @match         *://lootdest.info/*
-// @match         *://lootdest.org/*
-// @match         *://lootdest.com/*
-// @match         *://links-loot.com/*
-// @match         *://linksloot.net/*
-// @match         *://links.lootlabs.gg/*
-// @match         *://link-unlock.com/*
-// @match         *://boost.ink/*
-// @match         *://mboost.me/*
-// @match         *://linkvertise.com/*/*
-// @match         *://direct-link.net/*/*
-// @match         *://link-hub.net/*/*
-// @match         *://link-target.net/*/*
-// @match         *://link-center.net/*/*
-// @match         *://link-to.net/*/*
-// @match         *://neoxsoftworks.eu/*
-// @match         *://robloxscripts.gg/*
-// @match         *://socialwolvez.com/*
-// @match         *://sub2get.com/*
-// @match         *://sub2unlock.com/*
-// @match         *://sub2unlocksl.com/*
-// @match         *://trigonevo.com/auth/android*
-// @match         *://ntt-hub.xyz/key/ntt-hub.html?hwid=*
-// @match         *://ntt-hub.xyz/key/ntt-hub?hwid=*
-// @match         *://ldnesfspublic.org/*
-// @match         *://blog.tapvietcode.com/*
-// @match         *://link4sub.com/*
-// @match         *://linkunlocker.com/*
-// @match         *://rentry.co/*
-// @match         *://scriptblox.club/*
-// @match         *://scriptix.live/*
-// @match         *://rentry.co/*
-// @match         *://linkzy.space/*
-// @match         *://sub4unlock.com/*
-// @match         *://sub4unlock.pro/*
-// @match         *://sub4unlock.co/*
-// @match         *://subnise.com/*
-// @icon          https://i.ibb.co/GfnCW8X1/download.png
-// @grant         none
-// @downloadURL https://github.com/ron12373/userscript/raw/main/free.user.js
-// @updateURL https://github.com/ron12373/userscript/raw/main/free.user.js
+// @name         API
+// @namespace    http://tampermonkey.net/
+// @version      1.7
+// @description  API Huh?
+// @author       API
+// @match        *://rekonise.com/*
+// @match        *://auth.platorelay.com/*
+// @match        *://auth.platoboost.app/*
+// @match        *://auth.platoboost.me/*
+// @match        *://go.linkify.ru/*
+// @match        *://paste-drop.com/*
+// @match        *://pastefy.app/*
+// @match        *://scriptpastebins.com/*
+// @match        *://pastebin.com/*
+// @match        *://loot-link.com/*
+// @match        *://loot-links.com/*
+// @match        *://lootlink.org/*
+// @match        *://lootlinks.co/*
+// @match        *://lootdest.info/*
+// @match        *://lootdest.org/*
+// @match        *://lootdest.com/*
+// @match        *://links-loot.com/*
+// @match        *://linksloot.net/*
+// @match        *://links.lootlabs.gg/*
+// @match        *://link-unlock.com/*
+// @match        *://boost.ink/*
+// @match        *://mboost.me/*
+// @match        *://linkvertise.com/*/*
+// @match        *://direct-link.net/*/*
+// @match        *://link-hub.net/*/*
+// @match        *://link-target.net/*/*
+// @match        *://link-center.net/*/*
+// @match        *://link-to.net/*/*
+// @match        *://neoxsoftworks.eu/*
+// @match        *://robloxscripts.gg/*
+// @match        *://socialwolvez.com/*
+// @match        *://sub2get.com/*
+// @match        *://sub2unlock.com/*
+// @match        *://sub2unlocksl.com/*
+// @match        *://trigonevo.com/auth/android*
+// @match        *://ntt-hub.xyz/key/ntt-hub.html?hwid=*
+// @match        *://ntt-hub.xyz/key/ntt-hub?hwid=*
+// @match        *://ldnesfspublic.org/*
+// @match        *://blog.tapvietcode.com/*
+// @match        *://link4sub.com/*
+// @match        *://linkunlocker.com/*
+// @match        *://rentry.co/*
+// @match        *://scriptblox.club/*
+// @match        *://scriptix.live/*
+// @match        *://linkzy.space/*
+// @match        *://sub4unlock.com/*
+// @match        *://sub4unlock.pro/*
+// @match        *://sub4unlock.co/*
+// @match        *://subnise.com/*
+// @icon         https://i.ibb.co/GfnCW8X1/download.png
+// @require      https://github.com/ron12373/userscript/raw/main/mommy.js
+// @grant        none
 // ==/UserScript==
 
 (function () {
     'use strict';
 
-    const params=new URLSearchParams(location.search);
-    if(params.get("hash")){
-        try{
-            const decoded=atob(params.get("hash"));
-            if(decoded.startsWith("http://")||decoded.startsWith("https://")){
+    const params = new URLSearchParams(location.search);
+    if (params.get("hash")) {
+        try {
+            const decoded = atob(params.get("hash"));
+            if (decoded.startsWith("http://") || decoded.startsWith("https://")) {
                 location.replace(decoded);
                 return;
             }
-        }catch{}
+        } catch (e) {}
     }
 
-    const redirectDomains=[
-        "linkvertise.com",
-        "direct-link.net",
-        "link-hub.net",
-        "link-target.net",
-        "link-center.net",
-        "link-to.net"
-    ];
+    const redirectDomains = ["linkvertise.com", "direct-link.net", "link-hub.net", "link-target.net", "link-center.net", "link-to.net"];
+    function shouldRedirect() { return redirectDomains.some(d => location.hostname.includes(d)); }
 
-    function shouldRedirect(){
-        return redirectDomains.some(d=>location.hostname.includes(d));
-    }
-
-    const style=document.createElement("style");
-    style.innerHTML=`
-#ts-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,10,15,0.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:2147483647;font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
-#ts-particle-bg{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1}
-.particle{position:absolute;background:rgba(255,255,255,0.15);border-radius:50%;pointer-events:none;animation:particleMove 12s infinite ease-in-out;box-shadow:0 0 15px rgba(255,255,255,0.3)}
-@keyframes particleMove{0%{transform:translate(0,0) scale(1);opacity:.2}25%{transform:translate(30px,-20px) scale(1.5);opacity:.5}50%{transform:translate(-20px,30px) scale(.8);opacity:.3}75%{transform:translate(20px,20px) scale(1.2);opacity:.6}100%{transform:translate(0,0) scale(1);opacity:.2}}
-#ts-bridge-wrapper{position:relative;z-index:2;background:rgba(20,20,30,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:32px 28px;border-radius:36px;border:1px solid rgba(255,255,255,.15);box-shadow:0 30px 60px -15px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.1) inset,0 0 40px rgba(0,100,255,.2);width:450px;text-align:center;color:#f0f0f0}
-.ts-title{font-size:20px;font-weight:500;margin-bottom:28px;letter-spacing:.5px;color:#fff}
-#ts-iframe-container{background:rgba(0,0,0,.5);border-radius:22px;padding:14px;width:fit-content;margin:0 auto 20px auto;border:1px solid rgba(255,255,255,.15)}
-#ts-iframe{width:320px;height:70px;border:none;display:block;border-radius:10px}
-#ts-status-container{margin-top:16px;display:flex;align-items:center;justify-content:center;gap:10px;color:#aac8ff;font-size:15px}
-.loading-spinner{border:3px solid rgba(255,255,255,.15);border-top:3px solid #5f9eff;border-radius:50%;width:20px;height:20px;animation:spin 1s linear infinite}
-@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-#ts-result{display:none;margin-top:22px;padding:18px;border-radius:20px;font-size:15px;word-break:break-word;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);max-height:300px;overflow-y:auto;white-space:pre-wrap}
-.success-box{border-left:5px solid #2ecc71;background:rgba(46,204,113,.15)}
-.error-box{border-left:5px solid #e74c3c;background:rgba(231,76,60,.15)}
-.hidden{display:none!important}
-`;
+    const style = document.createElement("style");
+    style.innerHTML = `
+        #cmd-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 2147483647;
+            font-family: 'Consolas', 'Lucida Console', monospace;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #cmd-window {
+            width: 700px; height: 400px; background: #0c0c0c;
+            border: 1px solid #777; box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+            display: flex; flex-direction: column; border-radius: 4px; overflow: hidden;
+        }
+        #cmd-header {
+            background: #ffffff; color: #000; padding: 0 0 0 10px; font-size: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            height: 28px; border-bottom: 1px solid #555; user-select: none;
+        }
+        .header-title { display: flex; align-items: center; gap: 8px; }
+        .header-icon { width: 16px; height: 16px; }
+        .header-controls { display: flex; height: 100%; }
+        .control-btn { width: 45px; text-align: center; line-height: 28px; font-size: 14px; transition: 0.1s; cursor: pointer; }
+        .control-btn:hover { background: #e5e5e5; }
+        .btn-close:hover { background: #e81123 !important; color: #fff; }
+        #cmd-body { padding: 12px; flex-grow: 1; overflow-y: auto; line-height: 1.4; font-size: 14px; color: #cccccc; }
+        .cmd-line { margin-bottom: 4px; word-break: break-all; }
+        .cmd-prompt { color: #ffffff; margin-right: 5px; }
+        .cmd-text-cyan { color: #00ffff; }
+        .cmd-text-red { color: #ff5555; }
+        .cmd-text-green { color: #00ff00; }
+        .cmd-text-yellow { color: #ffff00; }
+        #ts-iframe-container { margin: 10px 0; border: 1px solid #333; padding: 10px; background: #1a1a1a; width: fit-content; }
+        #ts-iframe { width: 300px; height: 75px; border: none; filter: invert(0.9); }
+        .copy-btn { display: inline-block; margin-top: 10px; padding: 5px 10px; background: #333; color: #00ff00; border: 1px solid #555; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .copy-btn:hover { background: #444; border-color: #00ff00; }
+        .copy-btn:active { background: #222; }
+        .loading-text::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
+        @keyframes dots { 0%,20%{content:''} 40%{content:'.'} 60%{content:'..'} 80%{content:'...'} }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #0c0c0c; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+        .hidden { display: none !important; }
+    `;
     document.head.appendChild(style);
 
-    const overlay=document.createElement("div");
-    overlay.id="ts-overlay";
-
-    const particleBg=document.createElement("div");
-    particleBg.id="ts-particle-bg";
-
-    for(let i=0;i<45;i++){
-        const p=document.createElement("div");
-        p.className="particle";
-        const s=4+Math.random()*12;
-        p.style.width=s+"px";
-        p.style.height=s+"px";
-        p.style.left=Math.random()*100+"%";
-        p.style.top=Math.random()*100+"%";
-        p.style.animationDelay=Math.random()*8+"s";
-        p.style.animationDuration=(8+Math.random()*10)+"s";
-        particleBg.appendChild(p);
-    }
-
-    overlay.appendChild(particleBg);
-
-    const wrapper=document.createElement("div");
-    wrapper.id="ts-bridge-wrapper";
-    wrapper.innerHTML=`
-<div class="ts-title">Please Complete Captcha</div>
-<div id="ts-iframe-container">
-<iframe id="ts-iframe" src="https://userscript.baconbypass.online/load-cf" scrolling="no"></iframe>
+    const overlay = document.createElement("div");
+    overlay.id = "cmd-overlay";
+    overlay.innerHTML = `
+        <div id="cmd-window">
+            <div id="cmd-header">
+                <div class="header-title">
+                    <img class="header-icon" src="https://i.ibb.co/GfnCW8X1/download.png">
+                    <span>C:\\Windows\\system32\\cmd.exe - baconbypass.exe</span>
+                </div>
+                <div class="header-controls">
+                    <div class="control-btn">─</div>
+                    <div class="control-btn">❏</div>
+                    <div id="close-cmd" class="control-btn btn-close">✕</div>
+                </div>
+            </div>
+            <div id="cmd-body">
+                <div class="cmd-line">Microsoft Windows [Version 10.0.19045.4291]</div>
+                <div class="cmd-line">(c) Microsoft Corporation. All rights reserved.</div>
+                <br>
+                <div class="cmd-line"><span class="cmd-prompt">C:\\Users\\Bacon></span>baconbypass.exe --target=${location.hostname}</div>
+                <div id="cmd-log">
+                    <div class="cmd-line">[*] Initializing...</div>
+                </div>
+                <div id="ts-iframe-container" class="hidden">
+                    <iframe id="ts-iframe" src="https://userscript.baconbypass.online/load-cf" scrolling="no"></iframe>
+                </div>
+                <div id="cmd-status" class="hidden">
+    <div id="status-text" class="cmd-line cmd-text-cyan loading-text">[*] Fetching Bacon Bypass Bot</div>
 </div>
-<div id="ts-status-container" class="hidden">
-<div class="loading-spinner"></div>
-<span>Bypassing, please wait...</span>
-</div>
-<div id="ts-result"></div>
-`;
-
-    overlay.appendChild(wrapper);
+                <div id="cmd-result" class="cmd-line hidden"></div>
+            </div>
+        </div>
+    `;
     document.body.appendChild(overlay);
 
-    const iframeContainer=document.getElementById("ts-iframe-container");
-    const statusContainer=document.getElementById("ts-status-container");
-    const resultBox=document.getElementById("ts-result");
-    const titleEl=document.querySelector(".ts-title");
+    document.getElementById("close-cmd").onclick = () => { overlay.remove(); };
 
-    async function sendToApi(token){
-        iframeContainer.classList.add("hidden");
-        statusContainer.classList.remove("hidden");
-        titleEl.textContent="Fetching API";
+    const logBox = document.getElementById("cmd-log");
+    const statusBox = document.getElementById("cmd-status");
+    const iframeContainer = document.getElementById("ts-iframe-container");
+    const resultBox = document.getElementById("cmd-result");
 
-        try{
-            const response=await fetch("https://userscript.baconbypass.online/adlink",{
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify({url:location.href,token})
+    function addLog(text, colorClass = "") {
+        const div = document.createElement("div");
+        div.className = "cmd-line " + colorClass;
+        div.innerHTML = `<span class="cmd-prompt">[*]</span> ${text}`;
+        logBox.appendChild(div);
+        document.getElementById("cmd-body").scrollTop = 9999;
+    }
+
+    async function getVerifyToken() {
+        try {
+            const res = await fetch("https://userscript.baconbypass.online/verify");
+            const data = await res.json();
+            if (!data.s || !data.p) throw new Error();
+            return await new Promise((resolve, reject) => {
+                if (typeof window.ppp !== 'function') return reject(new Error("lib not ready"));
+                window.ppp(data.p, async (result) => {
+                    try {
+                        const encoded = btoa(result);
+                        const vRes = await fetch("https://userscript.baconbypass.online/verify", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ session: data.s, result: encoded })
+                        });
+                        const vData = await vRes.json();
+                        if (vData.status === "success" && vData.token2) resolve(vData.token2);
+                        else reject(new Error("verification failed"));
+                    } catch (e) { reject(e); }
+                });
             });
-
-            const data=await response.json();
-
-            if(data.status==="success"){
-                const result=data.result;
-
-                if(result.startsWith("http")&&shouldRedirect()){
-                    const encoded=btoa(result);
-                    location.href="https://linkvertise.com/access/1229176/kiciahook-kiciahook?hash="+encoded;
-                    return;
-                }
-
-                if(result.startsWith("http")){
-                    location.href=result;
-                    return;
-                }
-
-                statusContainer.classList.add("hidden");
-                resultBox.style.display="block";
-                resultBox.className="success-box";
-                resultBox.textContent=result;
-                titleEl.textContent="Bypass Successful";
-            }else{
-                statusContainer.classList.add("hidden");
-                resultBox.style.display="block";
-                resultBox.className="error-box";
-                resultBox.textContent=data.message||"Error";
-                titleEl.textContent="Error";
-            }
-        }catch(e){
-            statusContainer.classList.add("hidden");
-            resultBox.style.display="block";
-            resultBox.className="error-box";
-            resultBox.textContent=e.message;
-            titleEl.textContent="Error";
+        } catch (e) {
+            return null;
         }
     }
 
-    window.addEventListener("message",e=>{
-        if(e.data&&(e.data.type==="CF_SOLVED"||e.data.type==="TURNSTILE_SOLVED")){
-            sendToApi(e.data.token);
+    async function runBypass(cfToken) {
+        iframeContainer.classList.add("hidden");
+        statusBox.classList.remove("hidden");
+
+        const statusText = document.getElementById("status-text");
+        statusText.innerText = "[*] Verifying security challenge";
+        statusText.className = "cmd-line cmd-text-yellow loading-text";
+
+        try {
+            const token2 = await getVerifyToken();
+
+            if (!token2) {
+                resultBox.classList.remove("hidden");
+                resultBox.className = "cmd-line cmd-text-red";
+                resultBox.innerHTML = `<br>[SYSTEM ERROR] Challenge failed. Please try again.`;
+                statusBox.classList.add("hidden");
+                return;
+            }
+
+            statusText.innerText = "[*] Fetching Bacon Bypass Bot";
+            statusText.className = "cmd-line cmd-text-cyan loading-text";
+
+            const response = await fetch("https://userscript.baconbypass.online/adlink", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: location.href, token: cfToken, token2 })
+            });
+
+            const data = await response.json();
+
+            if (data.status === "success") {
+                const result = data.result;
+                addLog("Done!", "cmd-text-green");
+
+                if (result.startsWith("http") && shouldRedirect()) {
+                    location.href = "https://linkvertise.com/access/1229176/kiciahook-kiciahook?hash=" + btoa(result);
+                    return;
+                }
+
+                if (result.startsWith("http")) {
+                    location.href = result;
+                    return;
+                }
+
+                statusBox.classList.add("hidden");
+                resultBox.classList.remove("hidden");
+                resultBox.innerHTML = `
+                <br><span class="cmd-text-cyan">>> DATA RETRIEVED:</span><br>
+                <span id="raw-data" style="color:#fff;background:#222;padding:2px 5px;">${result}</span><br>
+                <div id="copy-trigger" class="copy-btn">Click to Copy</div>
+            `;
+                document.getElementById("copy-trigger").onclick = function () {
+                    navigator.clipboard.writeText(result).then(() => {
+                        this.innerText = "COPIED!";
+                        this.style.color = "#fff";
+                        setTimeout(() => { this.innerText = "Click to Copy"; this.style.color = "#00ff00"; }, 2000);
+                    });
+                };
+            } else {
+                throw new Error(data.message || "Bypass Failed");
+            }
+        } catch (e) {
+            statusBox.classList.add("hidden");
+            resultBox.classList.remove("hidden");
+            resultBox.className = "cmd-line cmd-text-red";
+            resultBox.innerHTML = `<br>[SYSTEM ERROR] ${e.message}`;
+        }
+    }
+
+    async function init() {
+        addLog("Challenge required. Complete verification below.", "cmd-text-yellow");
+        iframeContainer.classList.remove("hidden");
+    }
+
+    init();
+
+    window.addEventListener("message", async (e) => {
+        if (e.data && (e.data.type === "CF_SOLVED" || e.data.type === "TURNSTILE_SOLVED")) {
+            await runBypass(e.data.token);
         }
     });
-
 })();
