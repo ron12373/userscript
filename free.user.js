@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         API
 // @namespace    http://tampermonkey.net/
-// @version      1.7
+// @version      1.8
 // @description  API Huh?
 // @author       API
 // @match        *://rekonise.com/*
@@ -62,6 +62,7 @@
     'use strict';
 
     const params = new URLSearchParams(location.search);
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
     if (params.get("hash")) {
         try {
             const decoded = atob(params.get("hash"));
@@ -201,10 +202,11 @@
         statusBox.classList.remove("hidden");
 
         const statusText = document.getElementById("status-text");
-        statusText.innerText = "[*] Verifying security challenge";
-        statusText.className = "cmd-line cmd-text-yellow loading-text";
 
         try {
+            statusText.innerText = "[*] Verifying security challenge";
+            statusText.className = "cmd-line cmd-text-yellow loading-text";
+
             const token2 = await getVerifyToken();
 
             if (!token2) {
@@ -214,6 +216,8 @@
                 statusBox.classList.add("hidden");
                 return;
             }
+
+            addLog("Challenge Passed Successfully!", "cmd-text-green");
 
             statusText.innerText = "[*] Fetching Bacon Bypass Bot";
             statusText.className = "cmd-line cmd-text-cyan loading-text";
@@ -228,7 +232,9 @@
 
             if (data.status === "success") {
                 const result = data.result;
+
                 addLog("Done!", "cmd-text-green");
+                statusBox.classList.add("hidden");
 
                 if (result.startsWith("http") && shouldRedirect()) {
                     location.href = "https://linkvertise.com/access/1229176/kiciahook-kiciahook?hash=" + btoa(result);
@@ -240,7 +246,6 @@
                     return;
                 }
 
-                statusBox.classList.add("hidden");
                 resultBox.classList.remove("hidden");
                 resultBox.innerHTML = `
                 <br><span class="cmd-text-cyan">>> DATA RETRIEVED:</span><br>
