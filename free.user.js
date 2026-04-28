@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         API
 // @namespace    http://tampermonkey.net/
-// @version      1.8
+// @version      1.9
 // @description  API Huh?
 // @author       API
 // @match        *://rekonise.com/*
@@ -39,7 +39,7 @@
 // @match        *://sub2unlock.com/*
 // @match        *://sub2unlocksl.com/*
 // @match        *://trigonevo.com/auth/android*
-// @match        *://ntt-hub.xyz/key/ntt-hub.html?hwid=*
+// @match        *://ntt-hub.xyz/key/main?hwid=*
 // @match        *://ntt-hub.xyz/key/ntt-hub?hwid=*
 // @match        *://ldnesfspublic.org/*
 // @match        *://blog.tapvietcode.com/*
